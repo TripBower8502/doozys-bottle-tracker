@@ -59,19 +59,19 @@ function App() {
     return () => unsubs.forEach((fn) => fn());
   }, []);
 
-  // Seed defaults if database is empty (first run)
+  // Seed defaults if database is empty (first run), and keep employees/bottles in sync
   useEffect(() => {
     if (!loaded) return;
-    const seedRef = ref(db, 'bottles');
-    onValue(seedRef, (snap) => {
+    onValue(ref(db, 'bottles'), (snap) => {
       if (!snap.exists()) {
         set(ref(db, 'bottles'), DEFAULT_BOTTLES);
-        set(ref(db, 'employees'), DEFAULT_EMPLOYEES);
         set(ref(db, 'sales'), {});
         set(ref(db, 'goals'), {});
         set(ref(db, 'history'), []);
       }
     }, { onlyOnce: true });
+    // Always sync employees from code (managed by owner)
+    set(ref(db, 'employees'), DEFAULT_EMPLOYEES);
   }, [loaded]);
 
   const handleSell = useCallback((empName, bottleId) => {

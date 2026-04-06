@@ -20,7 +20,7 @@ export const CAT_COLORS = {
 
 export const MEDALS = ['🥇', '🥈', '🥉'];
 
-export const DEFAULT_EMPLOYEES = ['McKensi', 'Sheila', 'Angie', 'Tisha', 'Gaveriel', 'Sarah'];
+export const DEFAULT_EMPLOYEES = ['McKensi', 'Sheila', 'Angie', 'Tisha', 'Gaveriel'];
 
 export const DEFAULT_BOTTLES = [
   // ── Wine ──
