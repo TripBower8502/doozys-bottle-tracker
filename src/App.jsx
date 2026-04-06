@@ -22,7 +22,7 @@ function App() {
   const [bottles, setBottles] = useState(DEFAULT_BOTTLES);
   const [employees, setEmployees] = useState(DEFAULT_EMPLOYEES);
   const { isManager, lockedEmployee } = getRole(employees);
-  const [tab, setTab] = useState('rankings');
+  const [tab, setTab] = useState(isManager ? 'manager' : 'rankings');
   const [sales, setSales] = useState({});
   const [goals, setGoals] = useState({});
   const [history, setHistory] = useState([]);
