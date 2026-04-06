@@ -4,10 +4,12 @@ import { db, ref, onValue, set, update } from './firebase';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import FlashBanner from './components/FlashBanner';
+import OfflineBar from './components/OfflineBar';
 import Rankings from './tabs/Rankings';
 import MySales from './tabs/MySales';
 import Manager from './tabs/Manager';
 import Guide from './tabs/Guide';
+import Schedule from './tabs/Schedule';
 
 function getRole(employeeList) {
   const hash = window.location.hash.replace('#', '').replace(/^\//, '');
@@ -24,6 +26,7 @@ function App() {
   const [sales, setSales] = useState({});
   const [goals, setGoals] = useState({});
   const [history, setHistory] = useState([]);
+  const [schedule, setSchedule] = useState({});
   const [flash, setFlash] = useState(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -51,6 +54,10 @@ function App() {
 
     unsubs.push(onValue(ref(db, 'history'), (snap) => {
       setHistory(snap.val() || []);
+    }));
+
+    unsubs.push(onValue(ref(db, 'schedule'), (snap) => {
+      setSchedule(snap.val() || {});
     }));
 
     // Mark loaded after first data arrives
@@ -119,7 +126,7 @@ function App() {
       <div className="app">
         <Header />
         <main className="main" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <p style={{ color: 'var(--muted)', fontFamily: 'var(--font-display)', letterSpacing: 2 }}>Loading…</p>
+          <p className="loading-text">Loading…</p>
         </main>
       </div>
     );
@@ -127,6 +134,7 @@ function App() {
 
   return (
     <div className="app">
+      <OfflineBar />
       <FlashBanner message={flash} onDone={() => setFlash(null)} />
       <Header />
 
@@ -165,12 +173,20 @@ function App() {
             bottles={bottles}
             sales={sales}
             goals={goals}
+            schedule={schedule}
             onSell={handleSell}
             onUndoSell={handleUndoSell}
             onSetGoal={handleSetGoal}
           />
         )}
         {tab === 'guide' && <Guide bottles={bottles} />}
+        {tab === 'schedule' && (
+          <Schedule
+            employees={employees}
+            schedule={schedule}
+            lockedEmployee={lockedEmployee}
+          />
+        )}
       </main>
 
       <BottomNav active={tab} onNav={setTab} isManager={isManager} />

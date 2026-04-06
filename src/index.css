@@ -810,6 +810,261 @@ html, body {
   font-weight: 600;
 }
 
+/* ── OFFLINE BAR ── */
+.offline-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--wine);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 6px;
+  z-index: 300;
+  animation: pulse-gold 1.5s infinite;
+}
+
+/* ── LOADING ── */
+.loading-text {
+  color: var(--muted);
+  font-family: var(--font-display);
+  letter-spacing: 2px;
+  animation: pulse-gold 1.5s infinite;
+}
+@keyframes pulse-gold {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* ── WEEK NAV ── */
+.week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.week-arrow {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--gold);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.week-label {
+  font-family: var(--font-display);
+  font-size: 13px;
+  color: var(--cream);
+  letter-spacing: 1px;
+}
+
+/* ── MANAGER SCHEDULE GRID ── */
+.sched-grid {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 12px;
+}
+.sched-header-row, .sched-row {
+  display: flex;
+  min-width: 600px;
+}
+.sched-emp-col {
+  width: 80px;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--cream);
+  padding: 6px 4px;
+  display: flex;
+  align-items: center;
+}
+.sched-day-col {
+  flex: 1;
+  text-align: center;
+  padding: 4px 2px;
+  font-family: var(--font-display);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.sched-day-col.today {
+  border-left: 2px solid var(--gold);
+}
+.sched-day-name { display: block; }
+.sched-day-num { display: block; font-size: 12px; color: var(--cream); }
+.sched-cell {
+  flex: 1;
+  min-height: 40px;
+  padding: 4px 2px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  margin: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.sched-cell:hover { background: var(--surface2); }
+.sched-cell.today { border-left: 2px solid var(--gold); }
+.sched-cell.editing { border-color: var(--gold); background: var(--surface2); }
+.sched-time {
+  font-size: 10px;
+  color: var(--gold);
+  line-height: 1.2;
+}
+.sched-off {
+  font-size: 10px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ── SHIFT EDITOR ── */
+.shift-editor {
+  background: var(--surface);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  padding: 14px;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.shift-editor-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  color: var(--gold);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.quick-btns {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.quick-btns .btn-ghost {
+  padding: 6px 10px;
+  font-size: 10px;
+}
+.quick-btns .btn-ghost.active {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.custom-shift {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.time-input {
+  flex: 1;
+  text-align: center;
+}
+.time-sep {
+  color: var(--gold);
+  font-size: 16px;
+}
+.shift-actions {
+  display: flex;
+  gap: 8px;
+}
+.shift-actions .btn-gold { flex: 1; }
+.shift-actions .btn-ghost { flex: 1; }
+
+/* ── EMPLOYEE SCHEDULE TAB ── */
+.next-shift {
+  background: var(--surface);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+.next-shift-label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+.next-shift-value {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+.no-schedule {
+  text-align: center;
+  color: var(--muted);
+  font-style: italic;
+  font-size: 15px;
+  padding: 40px 16px;
+}
+.day-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.day-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.day-card.today {
+  border-color: var(--gold);
+  background: var(--surface2);
+}
+.day-card-header {
+  display: flex;
+  flex-direction: column;
+}
+.day-card-name {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--cream);
+  letter-spacing: 1px;
+}
+.day-card-date {
+  font-size: 12px;
+  color: var(--muted);
+}
+.day-card-shift {
+  text-align: right;
+}
+.day-card-time {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+.day-card-note {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+}
+.day-card-off {
+  font-size: 14px;
+  color: var(--muted);
+  font-style: italic;
+}
+
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { CATEGORIES, CAT_ICONS } from '../constants';
+import ManagerSchedule from '../components/ManagerSchedule';
 
-export default function Manager({ employees, bottles, sales, goals, onSell, onUndoSell, onSetGoal }) {
+export default function Manager({ employees, bottles, sales, goals, schedule, onSell, onUndoSell, onSetGoal }) {
   const [emp, setEmp] = useState(employees[0] || '');
   const [catFilter, setCatFilter] = useState('All');
   const [bottleId, setBottleId] = useState('');
@@ -156,6 +157,10 @@ export default function Manager({ employees, bottles, sales, goals, onSell, onUn
           </table>
         </div>
       </div>
+
+      <div className="ornament-sm" style={{ margin: '20px 0' }}>── ✦ ──</div>
+
+      <ManagerSchedule employees={employees} schedule={schedule} />
     </div>
   );
 }

@@ -3,6 +3,7 @@ const ALL_TABS = [
   { id: 'mysales', label: 'My Sales', icon: '📊' },
   { id: 'manager', label: 'Manager', icon: '📋', managerOnly: true },
   { id: 'guide', label: 'Guide', icon: '📖' },
+  { id: 'schedule', label: 'Schedule', icon: '🗓' },
 ];
 
 export default function BottomNav({ active, onNav, isManager }) {
