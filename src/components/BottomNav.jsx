@@ -1,6 +1,6 @@
 const MANAGER_TABS = [
-  { id: 'rankings', label: 'Rankings', icon: '🏆' },
   { id: 'manager', label: 'Dashboard', icon: '📋' },
+  { id: 'rankings', label: 'Rankings', icon: '🏆' },
   { id: 'guide', label: 'Guide', icon: '📖' },
   { id: 'schedule', label: 'Schedule', icon: '🗓' },
 ];
