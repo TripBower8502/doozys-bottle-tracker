@@ -60,65 +60,55 @@ export default function ManagerSchedule({ employees, schedule }) {
         <button className="week-arrow" onClick={() => setWeekDate(shiftWeek(weekDate, 1))}>›</button>
       </div>
 
-      <div className="sched-grid">
-        <div className="sched-header-row">
-          <div className="sched-emp-col"></div>
-          {weekDates.map(({ day, date }) => (
-            <div key={day} className={`sched-day-col${isToday(date) ? ' today' : ''}`}>
-              <span className="sched-day-name">{day}</span>
-              <span className="sched-day-num">{date.getDate()}</span>
-            </div>
-          ))}
-        </div>
-
-        {employees.map((emp) => {
-          const empSched = weekSchedule[emp] || {};
-          return (
-            <div key={emp} className="sched-row">
-              <div className="sched-emp-col">{emp}</div>
+      {employees.map((emp) => {
+        const empSched = weekSchedule[emp] || {};
+        return (
+          <div key={emp} className="sched-emp-card">
+            <h4 className="sched-emp-name">{emp}</h4>
+            <div className="sched-day-list">
               {weekDates.map(({ day, date }) => {
                 const shift = empSched[day] || null;
+                const today = isToday(date);
                 const isEd = editing && editing.emp === emp && editing.day === day;
                 return (
-                  <div
-                    key={day}
-                    className={`sched-cell${isToday(date) ? ' today' : ''}${isEd ? ' editing' : ''}`}
-                    onClick={() => !isEd && openEditor(emp, day, shift)}
-                  >
-                    {shift ? (
-                      <span className="sched-time">{formatTime(shift.start)}–{formatTime(shift.end)}</span>
-                    ) : (
-                      <span className="sched-off">Off</span>
+                  <div key={day}>
+                    <button
+                      className={`sched-day-btn${today ? ' today' : ''}${isEd ? ' editing' : ''}`}
+                      onClick={() => openEditor(emp, day, shift)}
+                    >
+                      <span className="sched-day-label">{day} {date.getDate()}</span>
+                      {shift ? (
+                        <span className="sched-day-time">{formatTime(shift.start)}–{formatTime(shift.end)}{shift.note ? ` · ${shift.note}` : ''}</span>
+                      ) : (
+                        <span className="sched-day-off">Off</span>
+                      )}
+                    </button>
+                    {isEd && (
+                      <div className="shift-editor">
+                        <div className="quick-btns">
+                          {Object.keys(QUICK_SHIFTS).map((label) => (
+                            <button key={label} className="btn-ghost" onClick={() => handleQuick(label)}>{label}</button>
+                          ))}
+                        </div>
+                        <div className="custom-shift">
+                          <input type="time" className="input time-input" value={customStart} onChange={(e) => setCustomStart(e.target.value)} />
+                          <span className="time-sep">→</span>
+                          <input type="time" className="input time-input" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} />
+                        </div>
+                        <input className="input" placeholder="Note (e.g. Register 1)" value={customNote} onChange={(e) => setCustomNote(e.target.value)} />
+                        <div className="shift-actions">
+                          <button className="btn-gold" onClick={handleCustom}>Set</button>
+                          <button className="btn-ghost" onClick={() => setEditing(null)}>Cancel</button>
+                        </div>
+                      </div>
                     )}
                   </div>
                 );
               })}
             </div>
-          );
-        })}
-      </div>
-
-      {editing && (
-        <div className="shift-editor">
-          <div className="shift-editor-title">{editing.emp} — {editing.day}</div>
-          <div className="quick-btns">
-            {Object.keys(QUICK_SHIFTS).map((label) => (
-              <button key={label} className="btn-ghost" onClick={() => handleQuick(label)}>{label}</button>
-            ))}
-            <button className="btn-ghost active" onClick={() => {}}>Custom</button>
           </div>
-          <div className="custom-shift">
-            <input type="time" className="input time-input" value={customStart} onChange={(e) => setCustomStart(e.target.value)} />
-            <span className="time-sep">→</span>
-            <input type="time" className="input time-input" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} />
-          </div>
-          <input className="input" placeholder="Note (e.g. Register 1, Floor)" value={customNote} onChange={(e) => setCustomNote(e.target.value)} />
-          <div className="shift-actions">
-            <button className="btn-gold" onClick={handleCustom}>Confirm</button>
-            <button className="btn-ghost" onClick={() => setEditing(null)}>Cancel</button>
-          </div>
-        </div>
-      )}
+        );
+      })}
 
       <div style={{ textAlign: 'center', marginTop: 16 }}>
         <button className="btn-ghost danger" onClick={handleClearWeek}>Clear Week</button>

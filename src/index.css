@@ -868,64 +868,57 @@ html, body {
   letter-spacing: 1px;
 }
 
-/* ── MANAGER SCHEDULE GRID ── */
-.sched-grid {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+/* ── MANAGER SCHEDULE (vertical cards) ── */
+.sched-emp-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
   margin-bottom: 12px;
 }
-.sched-header-row, .sched-row {
-  display: flex;
-  min-width: 600px;
-}
-.sched-emp-col {
-  width: 80px;
-  flex-shrink: 0;
-  font-size: 12px;
+.sched-emp-name {
+  font-family: var(--font-display);
+  font-size: 14px;
   color: var(--cream);
-  padding: 6px 4px;
+  letter-spacing: 1px;
+  margin: 0 0 8px;
+}
+.sched-day-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sched-day-btn {
+  width: 100%;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  transition: border-color 0.2s;
 }
-.sched-day-col {
-  flex: 1;
-  text-align: center;
-  padding: 4px 2px;
+.sched-day-btn.today { border-left: 3px solid var(--gold); }
+.sched-day-btn.editing { border-color: var(--gold); }
+.sched-day-label {
   font-family: var(--font-display);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
   letter-spacing: 1px;
-  text-transform: uppercase;
+  min-width: 50px;
 }
-.sched-day-col.today {
-  border-left: 2px solid var(--gold);
-}
-.sched-day-name { display: block; }
-.sched-day-num { display: block; font-size: 12px; color: var(--cream); }
-.sched-cell {
-  flex: 1;
-  min-height: 40px;
-  padding: 4px 2px;
-  text-align: center;
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  margin: 1px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-}
-.sched-cell:hover { background: var(--surface2); }
-.sched-cell.today { border-left: 2px solid var(--gold); }
-.sched-cell.editing { border-color: var(--gold); background: var(--surface2); }
-.sched-time {
-  font-size: 10px;
+.sched-day-time {
+  font-size: 13px;
   color: var(--gold);
-  line-height: 1.2;
 }
-.sched-off {
-  font-size: 10px;
+.sched-day-off {
+  font-size: 13px;
   color: var(--muted);
   font-style: italic;
 }
@@ -936,17 +929,10 @@ html, body {
   border: 1px solid var(--gold);
   border-radius: 8px;
   padding: 14px;
-  margin-top: 12px;
+  margin: 6px 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-.shift-editor-title {
-  font-family: var(--font-display);
-  font-size: 13px;
-  color: var(--gold);
-  letter-spacing: 1px;
-  text-transform: uppercase;
 }
 .quick-btns {
   display: flex;

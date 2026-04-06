@@ -1,13 +1,19 @@
-const ALL_TABS = [
+const MANAGER_TABS = [
+  { id: 'rankings', label: 'Rankings', icon: '🏆' },
+  { id: 'manager', label: 'Dashboard', icon: '📋' },
+  { id: 'guide', label: 'Guide', icon: '📖' },
+  { id: 'schedule', label: 'Schedule', icon: '🗓' },
+];
+
+const EMPLOYEE_TABS = [
   { id: 'rankings', label: 'Rankings', icon: '🏆' },
   { id: 'mysales', label: 'My Sales', icon: '📊' },
-  { id: 'manager', label: 'Manager', icon: '📋', managerOnly: true },
   { id: 'guide', label: 'Guide', icon: '📖' },
   { id: 'schedule', label: 'Schedule', icon: '🗓' },
 ];
 
 export default function BottomNav({ active, onNav, isManager }) {
-  const tabs = isManager ? ALL_TABS : ALL_TABS.filter((t) => !t.managerOnly);
+  const tabs = isManager ? MANAGER_TABS : EMPLOYEE_TABS;
   return (
     <nav className="bottom-nav">
       {tabs.map((t) => (
