@@ -15,18 +15,33 @@ function dateToDayKey(date) {
   return date.toISOString().slice(0, 10);
 }
 
+function isoToTimeInput(iso) {
+  const d = new Date(iso);
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+function timeInputToIso(dateStr, timeVal) {
+  const [h, m] = timeVal.split(':').map(Number);
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setHours(h, m, 0, 0);
+  return d.toISOString();
+}
+
 export default function ManagerSchedule({ employees, schedule, timeclock }) {
   const [weekDate, setWeekDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState('day'); // 'day' or 'employee'
+  const [viewMode, setViewMode] = useState('day');
   const [selectedDay, setSelectedDay] = useState(() => {
     const now = new Date();
-    const dayIdx = (now.getDay() + 6) % 7; // Mon=0
+    const dayIdx = (now.getDay() + 6) % 7;
     return DAYS[dayIdx];
   });
   const [editing, setEditing] = useState(null);
   const [customStart, setCustomStart] = useState('09:00');
   const [customEnd, setCustomEnd] = useState('17:00');
   const [customNote, setCustomNote] = useState('');
+  const [editingPunch, setEditingPunch] = useState(null); // { emp, dateStr, idx }
+  const [punchIn, setPunchIn] = useState('');
+  const [punchOut, setPunchOut] = useState('');
 
   const weekKey = getWeekKey(weekDate);
   const weekDates = getWeekDates(weekDate);
@@ -88,6 +103,35 @@ export default function ManagerSchedule({ employees, schedule, timeclock }) {
     </div>
   );
 
+  const openPunchEditor = (emp, dateStr, idx, punch) => {
+    setEditingPunch({ emp, dateStr, idx });
+    setPunchIn(isoToTimeInput(punch.clockIn));
+    setPunchOut(punch.clockOut ? isoToTimeInput(punch.clockOut) : '');
+  };
+
+  const savePunch = () => {
+    if (!editingPunch) return;
+    const { emp, dateStr, idx } = editingPunch;
+    const raw = timeclock?.[emp]?.[dateStr] || [];
+    const punches = Array.isArray(raw) ? [...raw] : [raw];
+    punches[idx] = {
+      clockIn: timeInputToIso(dateStr, punchIn),
+      clockOut: punchOut ? timeInputToIso(dateStr, punchOut) : null,
+    };
+    set(ref(db, `timeclock/${emp}/${dateStr}`), punches);
+    setEditingPunch(null);
+  };
+
+  const deletePunch = () => {
+    if (!editingPunch) return;
+    const { emp, dateStr, idx } = editingPunch;
+    const raw = timeclock?.[emp]?.[dateStr] || [];
+    const punches = Array.isArray(raw) ? [...raw] : [raw];
+    punches.splice(idx, 1);
+    set(ref(db, `timeclock/${emp}/${dateStr}`), punches.length > 0 ? punches : null);
+    setEditingPunch(null);
+  };
+
   // Get punches for an employee on a specific date
   const getPunches = (emp, dateStr) => {
     const raw = timeclock?.[emp]?.[dateStr] || null;
@@ -147,11 +191,30 @@ export default function ManagerSchedule({ employees, schedule, timeclock }) {
                   </div>
                   {punches.length > 0 && (
                     <div className="day-view-punches">
-                      {punches.map((p, i) => (
-                        <span key={i} className="day-view-punch">
-                          {formatClockTime(p.clockIn)}{p.clockOut ? `–${formatClockTime(p.clockOut)}` : ' (on clock)'}
-                        </span>
-                      ))}
+                      {punches.map((p, i) => {
+                        const isPunchEd = editingPunch && editingPunch.emp === emp && editingPunch.dateStr === dateStr && editingPunch.idx === i;
+                        return (
+                          <div key={i} className="punch-wrap">
+                            <button className="day-view-punch" onClick={() => openPunchEditor(emp, dateStr, i, p)}>
+                              {formatClockTime(p.clockIn)}{p.clockOut ? `–${formatClockTime(p.clockOut)}` : ' (on clock)'}
+                            </button>
+                            {isPunchEd && (
+                              <div className="punch-editor">
+                                <div className="custom-shift">
+                                  <input type="time" className="input time-input" value={punchIn} onChange={(e) => setPunchIn(e.target.value)} />
+                                  <span className="time-sep">→</span>
+                                  <input type="time" className="input time-input" value={punchOut} onChange={(e) => setPunchOut(e.target.value)} />
+                                </div>
+                                <div className="shift-actions">
+                                  <button className="btn-gold" onClick={savePunch}>Save</button>
+                                  <button className="btn-ghost danger" onClick={deletePunch}>Delete</button>
+                                  <button className="btn-ghost" onClick={() => setEditingPunch(null)}>Cancel</button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                   {isEd && shiftEditor}

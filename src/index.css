@@ -1072,14 +1072,34 @@ html, body {
   gap: 8px;
   flex-wrap: wrap;
 }
+.punch-wrap {
+  display: flex;
+  flex-direction: column;
+}
 .day-view-punch {
   font-size: 11px;
   color: var(--green);
   background: #f4faf3;
-  padding: 3px 8px;
+  padding: 5px 10px;
   border-radius: 4px;
   font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: var(--font-body);
 }
+.day-view-punch:hover { border-color: var(--green); }
+.punch-editor {
+  background: var(--surface);
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  padding: 10px;
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.punch-editor .shift-actions { gap: 4px; }
+.punch-editor .btn-gold, .punch-editor .btn-ghost { padding: 6px 10px; font-size: 10px; }
 .today-pill {
   border-color: var(--gold) !important;
 }
