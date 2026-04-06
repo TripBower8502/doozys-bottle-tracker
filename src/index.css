@@ -1031,6 +1031,59 @@ html, body {
   font-style: italic;
 }
 
+/* ── DAY VIEW (Manager) ── */
+.day-view-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.day-view-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.day-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  cursor: pointer;
+}
+.day-view-header:active { background: var(--surface2); }
+.day-view-name {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--cream);
+  letter-spacing: 1px;
+}
+.day-view-scheduled {
+  font-size: 13px;
+  color: var(--gold);
+}
+.day-view-off {
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+}
+.day-view-punches {
+  padding: 0 12px 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.day-view-punch {
+  font-size: 11px;
+  color: var(--green);
+  background: #f4faf3;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+.today-pill {
+  border-color: var(--gold) !important;
+}
+
 /* ── SHIFT EDITOR ── */
 .shift-editor {
   background: var(--surface);
@@ -1041,6 +1094,13 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+.shift-editor-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  color: var(--gold);
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 .quick-btns {
   display: flex;

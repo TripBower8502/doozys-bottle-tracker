@@ -212,7 +212,7 @@ export default function Manager({ employees, bottles, sales, goals, schedule, ti
 
       <div className="ornament-sm" style={{ margin: '20px 0' }}>── ✦ ──</div>
 
-      <ManagerSchedule employees={employees} schedule={schedule} />
+      <ManagerSchedule employees={employees} schedule={schedule} timeclock={timeclock} />
     </div>
   );
 }
