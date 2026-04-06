@@ -2,7 +2,23 @@ import { useState } from 'react';
 import { CATEGORIES, CAT_ICONS } from '../constants';
 import ManagerSchedule from '../components/ManagerSchedule';
 
-export default function Manager({ employees, bottles, sales, goals, schedule, onSell, onUndoSell, onSetGoal }) {
+function formatClockTime(iso) {
+  const d = new Date(iso);
+  const h = d.getHours();
+  const m = d.getMinutes();
+  const ampm = h >= 12 ? 'pm' : 'am';
+  const hr = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return m === 0 ? `${hr}${ampm}` : `${hr}:${String(m).padStart(2, '0')}${ampm}`;
+}
+
+function clockDuration(clockInIso) {
+  const mins = Math.floor((Date.now() - new Date(clockInIso).getTime()) / 60000);
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+export default function Manager({ employees, bottles, sales, goals, schedule, timeclock, onSell, onUndoSell, onSetGoal, onClockIn, onClockOut }) {
   const [emp, setEmp] = useState(employees[0] || '');
   const [catFilter, setCatFilter] = useState('All');
   const [bottleId, setBottleId] = useState('');
@@ -37,6 +53,36 @@ export default function Manager({ employees, bottles, sales, goals, schedule, on
     <div className="tab-content manager">
       <h2 className="tab-title">Manager</h2>
       <div className="ornament-sm">── ✦ ──</div>
+
+      <div className="mgr-section">
+        <h3 className="section-label">Who's On Clock</h3>
+        <div className="onclock-list">
+          {employees.map((e) => {
+            const today = new Date().toISOString().slice(0, 10);
+            const tc = timeclock?.[e]?.[today] || null;
+            const isIn = tc && tc.clockIn && !tc.clockOut;
+            return (
+              <div key={e} className={`onclock-row${isIn ? ' active' : ''}`}>
+                <span className={`clock-dot${isIn ? ' green' : ''}`} />
+                <span className="onclock-name">{e}</span>
+                {isIn ? (
+                  <>
+                    <span className="onclock-time">{formatClockTime(tc.clockIn)} · {clockDuration(tc.clockIn)}</span>
+                    <button className="btn-remove" onClick={() => onClockOut(e)}>Out</button>
+                  </>
+                ) : tc?.clockOut ? (
+                  <span className="onclock-done">{formatClockTime(tc.clockIn)}–{formatClockTime(tc.clockOut)}</span>
+                ) : (
+                  <>
+                    <span className="onclock-off">Not clocked in</span>
+                    <button className="btn-ghost" style={{ padding: '4px 8px', fontSize: 10 }} onClick={() => onClockIn(e)}>In</button>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       <div className="mgr-section">
         <h3 className="section-label">Record Sale</h3>

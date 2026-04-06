@@ -27,6 +27,7 @@ function App() {
   const [goals, setGoals] = useState({});
   const [history, setHistory] = useState([]);
   const [schedule, setSchedule] = useState({});
+  const [timeclock, setTimeclock] = useState({});
   const [flash, setFlash] = useState(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -58,6 +59,10 @@ function App() {
 
     unsubs.push(onValue(ref(db, 'schedule'), (snap) => {
       setSchedule(snap.val() || {});
+    }));
+
+    unsubs.push(onValue(ref(db, 'timeclock'), (snap) => {
+      setTimeclock(snap.val() || {});
     }));
 
     // Mark loaded after first data arrives
@@ -95,6 +100,23 @@ function App() {
     const bottle = bottles.find((b) => b.id === bottleId);
     setFlash(`Removed 1 ${bottle?.name || 'bottle'} from ${empName}`);
   }, [bottles, sales]);
+
+  const handleClockIn = useCallback((empName) => {
+    const today = new Date().toISOString().slice(0, 10);
+    set(ref(db, `timeclock/${empName}/${today}`), {
+      clockIn: new Date().toISOString(),
+      clockOut: null,
+    });
+    setFlash(`${empName} clocked in!`);
+  }, []);
+
+  const handleClockOut = useCallback((empName) => {
+    const today = new Date().toISOString().slice(0, 10);
+    update(ref(db, `timeclock/${empName}/${today}`), {
+      clockOut: new Date().toISOString(),
+    });
+    setFlash(`${empName} clocked out!`);
+  }, []);
 
   const handleSetGoal = (empName, target) => {
     update(ref(db, 'goals'), { [empName]: target });
@@ -174,9 +196,12 @@ function App() {
             sales={sales}
             goals={goals}
             schedule={schedule}
+            timeclock={timeclock}
             onSell={handleSell}
             onUndoSell={handleUndoSell}
             onSetGoal={handleSetGoal}
+            onClockIn={handleClockIn}
+            onClockOut={handleClockOut}
           />
         )}
         {tab === 'guide' && <Guide bottles={bottles} />}
@@ -184,7 +209,10 @@ function App() {
           <Schedule
             employees={employees}
             schedule={schedule}
+            timeclock={timeclock}
             lockedEmployee={lockedEmployee}
+            onClockIn={handleClockIn}
+            onClockOut={handleClockOut}
           />
         )}
       </main>

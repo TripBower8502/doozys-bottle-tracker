@@ -810,6 +810,111 @@ html, body {
   font-weight: 600;
 }
 
+/* ── CLOCK IN/OUT ── */
+.clock-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+.clock-card.clocked-in {
+  border-color: var(--green);
+  background: #f4faf3;
+}
+.clock-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.clock-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+  display: inline-block;
+  flex-shrink: 0;
+}
+.clock-dot.green {
+  background: var(--green);
+  box-shadow: 0 0 6px rgba(61, 139, 50, 0.4);
+}
+.clock-label {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--green);
+  letter-spacing: 1px;
+}
+.btn-clock-in {
+  width: 100%;
+  padding: 16px;
+  font-size: 16px;
+}
+.btn-clock-out {
+  width: 100%;
+  padding: 14px;
+  background: var(--wine);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.clock-done {
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+  margin: 0;
+}
+
+/* ── WHO'S ON CLOCK (Manager) ── */
+.onclock-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.onclock-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+.onclock-row.active {
+  border-color: var(--green);
+  background: #f4faf3;
+}
+.onclock-name {
+  flex: 1;
+  font-size: 14px;
+  color: var(--cream);
+}
+.onclock-time {
+  font-size: 12px;
+  color: var(--green);
+  font-weight: 600;
+}
+.onclock-done {
+  font-size: 12px;
+  color: var(--muted);
+}
+.onclock-off {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  flex: 1;
+  text-align: right;
+}
+
 /* ── OFFLINE BAR ── */
 .offline-bar {
   position: absolute;
