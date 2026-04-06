@@ -22,10 +22,13 @@ export default function Schedule({ employees, schedule, timeclock, lockedEmploye
 
   const hasSchedule = Object.values(empSched).some((v) => v !== null);
 
-  // Today's clock status
+  // Today's clock status — supports multiple punches per day
   const today = new Date().toISOString().slice(0, 10);
-  const todayClock = timeclock?.[emp]?.[today] || null;
-  const isClockedIn = todayClock && todayClock.clockIn && !todayClock.clockOut;
+  const rawPunches = timeclock?.[emp]?.[today] || null;
+  const punches = rawPunches ? (Array.isArray(rawPunches) ? rawPunches : [rawPunches]) : [];
+  const lastPunch = punches.length > 0 ? punches[punches.length - 1] : null;
+  const isClockedIn = lastPunch && lastPunch.clockIn && !lastPunch.clockOut;
+  const allClockedOut = punches.length > 0 && punches.every((p) => p.clockOut);
 
   // Find next upcoming shift
   const now = new Date();
@@ -65,18 +68,20 @@ export default function Schedule({ employees, schedule, timeclock, lockedEmploye
             <>
               <div className="clock-status">
                 <span className="clock-dot green" />
-                <span className="clock-label">Clocked in since {formatClockTime(todayClock.clockIn)}</span>
+                <span className="clock-label">Clocked in since {formatClockTime(lastPunch.clockIn)}</span>
               </div>
               <button className="btn-clock-out" onClick={() => onClockOut(emp)}>Clock Out</button>
             </>
           ) : (
             <>
-              {todayClock?.clockOut && (
-                <p className="clock-done">Shift complete — clocked out at {formatClockTime(todayClock.clockOut)}</p>
+              {allClockedOut && (
+                <div className="clock-history">
+                  {punches.map((p, i) => (
+                    <p key={i} className="clock-done">{formatClockTime(p.clockIn)} – {formatClockTime(p.clockOut)}</p>
+                  ))}
+                </div>
               )}
-              {!todayClock?.clockOut && (
-                <button className="btn-gold btn-clock-in" onClick={() => onClockIn(emp)}>Clock In</button>
-              )}
+              <button className="btn-gold btn-clock-in" onClick={() => onClockIn(emp)}>Clock In</button>
             </>
           )}
         </div>

@@ -873,6 +873,9 @@ html, body {
   font-style: italic;
   margin: 0;
 }
+.clock-history {
+  margin-bottom: 12px;
+}
 
 /* ── WHO'S ON CLOCK (Manager) ── */
 .onclock-list {

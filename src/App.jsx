@@ -103,20 +103,25 @@ function App() {
 
   const handleClockIn = useCallback((empName) => {
     const today = new Date().toISOString().slice(0, 10);
-    set(ref(db, `timeclock/${empName}/${today}`), {
-      clockIn: new Date().toISOString(),
-      clockOut: null,
-    });
+    const punches = timeclock?.[empName]?.[today] || [];
+    const arr = Array.isArray(punches) ? punches : [punches];
+    const next = [...arr, { clockIn: new Date().toISOString(), clockOut: null }];
+    set(ref(db, `timeclock/${empName}/${today}`), next);
     setFlash(`${empName} clocked in!`);
-  }, []);
+  }, [timeclock]);
 
   const handleClockOut = useCallback((empName) => {
     const today = new Date().toISOString().slice(0, 10);
-    update(ref(db, `timeclock/${empName}/${today}`), {
-      clockOut: new Date().toISOString(),
-    });
+    const punches = timeclock?.[empName]?.[today] || [];
+    const arr = Array.isArray(punches) ? punches : [punches];
+    const lastIdx = arr.length - 1;
+    if (lastIdx >= 0 && arr[lastIdx].clockIn && !arr[lastIdx].clockOut) {
+      const updated = [...arr];
+      updated[lastIdx] = { ...updated[lastIdx], clockOut: new Date().toISOString() };
+      set(ref(db, `timeclock/${empName}/${today}`), updated);
+    }
     setFlash(`${empName} clocked out!`);
-  }, []);
+  }, [timeclock]);
 
   const handleSetGoal = (empName, target) => {
     update(ref(db, 'goals'), { [empName]: target });

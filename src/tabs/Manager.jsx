@@ -59,19 +59,25 @@ export default function Manager({ employees, bottles, sales, goals, schedule, ti
         <div className="onclock-list">
           {employees.map((e) => {
             const today = new Date().toISOString().slice(0, 10);
-            const tc = timeclock?.[e]?.[today] || null;
-            const isIn = tc && tc.clockIn && !tc.clockOut;
+            const raw = timeclock?.[e]?.[today] || null;
+            const punches = raw ? (Array.isArray(raw) ? raw : [raw]) : [];
+            const last = punches.length > 0 ? punches[punches.length - 1] : null;
+            const isIn = last && last.clockIn && !last.clockOut;
+            const allOut = punches.length > 0 && punches.every((p) => p.clockOut);
             return (
               <div key={e} className={`onclock-row${isIn ? ' active' : ''}`}>
                 <span className={`clock-dot${isIn ? ' green' : ''}`} />
                 <span className="onclock-name">{e}</span>
                 {isIn ? (
                   <>
-                    <span className="onclock-time">{formatClockTime(tc.clockIn)} · {clockDuration(tc.clockIn)}</span>
+                    <span className="onclock-time">{formatClockTime(last.clockIn)} · {clockDuration(last.clockIn)}</span>
                     <button className="btn-remove" onClick={() => onClockOut(e)}>Out</button>
                   </>
-                ) : tc?.clockOut ? (
-                  <span className="onclock-done">{formatClockTime(tc.clockIn)}–{formatClockTime(tc.clockOut)}</span>
+                ) : allOut ? (
+                  <>
+                    <span className="onclock-done">{punches.length} punch{punches.length > 1 ? 'es' : ''}</span>
+                    <button className="btn-ghost" style={{ padding: '4px 8px', fontSize: 10 }} onClick={() => onClockIn(e)}>In</button>
+                  </>
                 ) : (
                   <>
                     <span className="onclock-off">Not clocked in</span>
