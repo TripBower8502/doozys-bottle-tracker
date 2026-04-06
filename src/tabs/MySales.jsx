@@ -104,6 +104,7 @@ export default function MySales({ employees, bottles, sales, goals, onSell, lock
             bottles={catBottles}
             soldCounts={empSales}
             onSell={(bottleId) => onSell(emp, bottleId)}
+            readOnly={!!lockedEmployee}
           />
         );
       })}

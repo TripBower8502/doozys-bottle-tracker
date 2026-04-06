@@ -1,6 +1,6 @@
 import { CAT_ICONS, CAT_COLORS } from '../constants';
 
-export default function CategorySection({ category, bottles, soldCounts, onSell }) {
+export default function CategorySection({ category, bottles, soldCounts, onSell, readOnly }) {
   return (
     <div className="cat-section">
       <h3 className="cat-header" style={{ color: CAT_COLORS[category] }}>
@@ -19,7 +19,7 @@ export default function CategorySection({ category, bottles, soldCounts, onSell 
                   {count > 0 && <span className="bottle-sold">×{count}</span>}
                 </div>
               </div>
-              <button className="sell-btn" onClick={() => onSell(b.id)}>+</button>
+              {!readOnly && <button className="sell-btn" onClick={() => onSell(b.id)}>+</button>}
             </div>
           );
         })}
