@@ -785,6 +785,31 @@ html, body {
   color: var(--cream);
 }
 
+/* ── UNDO ── */
+.undo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+.undo-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.undo-name {
+  flex: 1;
+  font-size: 14px;
+  color: var(--cream);
+}
+.undo-count {
+  font-size: 14px;
+  color: var(--blue);
+  font-weight: 600;
+}
+
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }

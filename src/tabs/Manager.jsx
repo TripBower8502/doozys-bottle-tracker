@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CATEGORIES, CAT_ICONS } from '../constants';
 
-export default function Manager({ employees, bottles, sales, goals, onSell, onSetGoal }) {
+export default function Manager({ employees, bottles, sales, goals, onSell, onUndoSell, onSetGoal }) {
   const [emp, setEmp] = useState(employees[0] || '');
   const [catFilter, setCatFilter] = useState('All');
   const [bottleId, setBottleId] = useState('');
@@ -78,6 +78,27 @@ export default function Manager({ employees, bottles, sales, goals, onSell, onSe
           <button className="btn-gold" onClick={handleRecord} disabled={!bottleId}>
             Record Sale
           </button>
+        </div>
+      </div>
+
+      <div className="mgr-section">
+        <h3 className="section-label">Undo Sale</h3>
+        <select className="mgr-select" value={emp} onChange={(e) => setEmp(e.target.value)}>
+          {employees.map((e) => <option key={e} value={e}>{e}</option>)}
+        </select>
+        <div className="undo-list">
+          {bottles
+            .filter((b) => (sales[emp] && sales[emp][b.id]) > 0)
+            .map((b) => (
+              <div key={b.id} className="undo-row">
+                <span className="undo-name">{b.name}</span>
+                <span className="undo-count">×{sales[emp][b.id]}</span>
+                <button className="btn-remove" onClick={() => onUndoSell(emp, b.id)}>−1</button>
+              </div>
+            ))}
+          {!bottles.some((b) => sales[emp] && sales[emp][b.id] > 0) && (
+            <p style={{ color: 'var(--muted)', fontSize: 14, fontStyle: 'italic' }}>No sales to undo.</p>
+          )}
         </div>
       </div>
 

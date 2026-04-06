@@ -81,6 +81,14 @@ function App() {
     setFlash(`${empName} sold ${bottle?.name || 'a bottle'}!`);
   }, [bottles, sales]);
 
+  const handleUndoSell = useCallback((empName, bottleId) => {
+    const currentCount = (sales[empName] && sales[empName][bottleId]) || 0;
+    if (currentCount <= 0) return;
+    update(ref(db, `sales/${empName}`), { [bottleId]: currentCount - 1 });
+    const bottle = bottles.find((b) => b.id === bottleId);
+    setFlash(`Removed 1 ${bottle?.name || 'bottle'} from ${empName}`);
+  }, [bottles, sales]);
+
   const handleSetGoal = (empName, target) => {
     update(ref(db, 'goals'), { [empName]: target });
   };
@@ -158,6 +166,7 @@ function App() {
             sales={sales}
             goals={goals}
             onSell={handleSell}
+            onUndoSell={handleUndoSell}
             onSetGoal={handleSetGoal}
           />
         )}
