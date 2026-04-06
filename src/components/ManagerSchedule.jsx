@@ -27,6 +27,31 @@ function timeInputToIso(dateStr, timeVal) {
   return d.toISOString();
 }
 
+const EMP_COLORS = ['#b8921e', '#9b3a5a', '#4a7da8', '#3d8b32', '#c46a3f', '#7b5ea7', '#c44a72', '#2a8a8a'];
+
+function timeToMinutes(t) {
+  if (!t) return 0;
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function isoToMinutes(iso) {
+  const d = new Date(iso);
+  return d.getHours() * 60 + d.getMinutes();
+}
+
+const TIMELINE_START = 6 * 60;  // 6am
+const TIMELINE_END = 25 * 60;   // 1am next day (25h)
+const TIMELINE_SPAN = TIMELINE_END - TIMELINE_START;
+
+function minutesToPct(mins) {
+  let m = mins;
+  if (m < TIMELINE_START) m += 24 * 60; // wrap past midnight
+  return Math.max(0, Math.min(100, ((m - TIMELINE_START) / TIMELINE_SPAN) * 100));
+}
+
+const TIMELINE_HOURS = [6, 8, 10, 12, 14, 16, 18, 20, 22, 0];
+
 export default function ManagerSchedule({ employees, schedule, timeclock }) {
   const [weekDate, setWeekDate] = useState(new Date());
   const [viewMode, setViewMode] = useState('day');
@@ -154,76 +179,110 @@ export default function ManagerSchedule({ employees, schedule, timeclock }) {
         <button className="week-arrow" onClick={() => setWeekDate(shiftWeek(weekDate, 1))}>›</button>
       </div>
 
-      {/* ── DAY VIEW ── */}
-      {viewMode === 'day' && (
-        <>
-          <div className="pill-row">
-            {weekDates.map(({ day, date }) => (
-              <button
-                key={day}
-                className={`pill${selectedDay === day ? ' active' : ''}${isToday(date) ? ' today-pill' : ''}`}
-                onClick={() => setSelectedDay(day)}
-              >
-                {day} {date.getDate()}
-              </button>
-            ))}
-          </div>
+      {/* ── DAY TIMELINE VIEW ── */}
+      {viewMode === 'day' && (() => {
+        const dayDate = weekDates.find((d) => d.day === selectedDay);
+        const dateStr = dayDate ? dateToDayKey(dayDate.date) : '';
 
-          <div className="day-view-list">
-            {employees.map((emp) => {
-              const shift = weekSchedule[emp]?.[selectedDay] || null;
-              const dayDate = weekDates.find((d) => d.day === selectedDay);
-              const dateStr = dayDate ? dateToDayKey(dayDate.date) : '';
-              const punches = getPunches(emp, dateStr);
-              const isEd = editing && editing.emp === emp && editing.day === selectedDay;
+        return (
+          <>
+            <div className="pill-row">
+              {weekDates.map(({ day, date }) => (
+                <button
+                  key={day}
+                  className={`pill${selectedDay === day ? ' active' : ''}${isToday(date) ? ' today-pill' : ''}`}
+                  onClick={() => { setSelectedDay(day); setEditing(null); setEditingPunch(null); }}
+                >
+                  {day} {date.getDate()}
+                </button>
+              ))}
+            </div>
 
-              return (
-                <div key={emp} className="day-view-card">
-                  <div className="day-view-header" onClick={() => openEditor(emp, selectedDay, shift)}>
-                    <span className="day-view-name">{emp}</span>
-                    <div className="day-view-shift-info">
-                      {shift ? (
-                        <span className="day-view-scheduled">{formatTime(shift.start)}–{formatTime(shift.end)}{shift.note ? ` · ${shift.note}` : ''}</span>
-                      ) : (
-                        <span className="day-view-off">Off</span>
+            {/* Time axis */}
+            <div className="timeline-axis">
+              {TIMELINE_HOURS.map((h) => (
+                <span key={h} className="timeline-hour" style={{ left: `${minutesToPct(h * 60)}%` }}>
+                  {h === 0 ? '12a' : h <= 12 ? `${h}${h === 12 ? 'p' : 'a'}` : `${h - 12}p`}
+                </span>
+              ))}
+            </div>
+
+            {/* Employee rows */}
+            <div className="timeline-rows">
+              {employees.map((emp, empIdx) => {
+                const shift = weekSchedule[emp]?.[selectedDay] || null;
+                const punches = getPunches(emp, dateStr);
+                const color = EMP_COLORS[empIdx % EMP_COLORS.length];
+                const isEd = editing && editing.emp === emp && editing.day === selectedDay;
+
+                return (
+                  <div key={emp} className="timeline-row">
+                    <div className="timeline-name">{emp}</div>
+                    <div className="timeline-track">
+                      {/* Scheduled shift bar */}
+                      {shift && (
+                        <div
+                          className="timeline-bar scheduled"
+                          style={{
+                            left: `${minutesToPct(timeToMinutes(shift.start))}%`,
+                            width: `${minutesToPct(timeToMinutes(shift.end)) - minutesToPct(timeToMinutes(shift.start))}%`,
+                            background: color,
+                          }}
+                          onClick={() => openEditor(emp, selectedDay, shift)}
+                          title={`${formatTime(shift.start)}–${formatTime(shift.end)}${shift.note ? ' · ' + shift.note : ''}`}
+                        />
                       )}
-                    </div>
-                  </div>
-                  {punches.length > 0 && (
-                    <div className="day-view-punches">
+                      {/* Actual punch bars */}
                       {punches.map((p, i) => {
-                        const isPunchEd = editingPunch && editingPunch.emp === emp && editingPunch.dateStr === dateStr && editingPunch.idx === i;
+                        const startM = isoToMinutes(p.clockIn);
+                        const endM = p.clockOut ? isoToMinutes(p.clockOut) : (new Date().getHours() * 60 + new Date().getMinutes());
                         return (
-                          <div key={i} className="punch-wrap">
-                            <button className="day-view-punch" onClick={() => openPunchEditor(emp, dateStr, i, p)}>
-                              {formatClockTime(p.clockIn)}{p.clockOut ? `–${formatClockTime(p.clockOut)}` : ' (on clock)'}
-                            </button>
-                            {isPunchEd && (
-                              <div className="punch-editor">
-                                <div className="custom-shift">
-                                  <input type="time" className="input time-input" value={punchIn} onChange={(e) => setPunchIn(e.target.value)} />
-                                  <span className="time-sep">→</span>
-                                  <input type="time" className="input time-input" value={punchOut} onChange={(e) => setPunchOut(e.target.value)} />
-                                </div>
-                                <div className="shift-actions">
-                                  <button className="btn-gold" onClick={savePunch}>Save</button>
-                                  <button className="btn-ghost danger" onClick={deletePunch}>Delete</button>
-                                  <button className="btn-ghost" onClick={() => setEditingPunch(null)}>Cancel</button>
-                                </div>
-                              </div>
-                            )}
-                          </div>
+                          <div
+                            key={i}
+                            className="timeline-bar actual"
+                            style={{
+                              left: `${minutesToPct(startM)}%`,
+                              width: `${Math.max(1, minutesToPct(endM) - minutesToPct(startM))}%`,
+                              background: color,
+                            }}
+                            onClick={() => openPunchEditor(emp, dateStr, i, p)}
+                            title={`Actual: ${formatClockTime(p.clockIn)}${p.clockOut ? '–' + formatClockTime(p.clockOut) : ' (on clock)'}`}
+                          />
                         );
                       })}
+                      {/* Tap empty area to add shift */}
+                      {!shift && punches.length === 0 && (
+                        <div className="timeline-empty" onClick={() => openEditor(emp, selectedDay, null)}>
+                          <span>+ Add</span>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {isEd && shiftEditor}
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
+                    {isEd && shiftEditor}
+                    {punches.map((p, i) => {
+                      const isPunchEd = editingPunch && editingPunch.emp === emp && editingPunch.dateStr === dateStr && editingPunch.idx === i;
+                      return isPunchEd ? (
+                        <div key={`pe-${i}`} className="punch-editor">
+                          <div className="shift-editor-title">Edit punch — {emp}</div>
+                          <div className="custom-shift">
+                            <input type="time" className="input time-input" value={punchIn} onChange={(e) => setPunchIn(e.target.value)} />
+                            <span className="time-sep">→</span>
+                            <input type="time" className="input time-input" value={punchOut} onChange={(e) => setPunchOut(e.target.value)} />
+                          </div>
+                          <div className="shift-actions">
+                            <button className="btn-gold" onClick={savePunch}>Save</button>
+                            <button className="btn-ghost danger" onClick={deletePunch}>Delete</button>
+                            <button className="btn-ghost" onClick={() => setEditingPunch(null)}>Cancel</button>
+                          </div>
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        );
+      })()}
 
       {/* ── EMPLOYEE VIEW ── */}
       {viewMode === 'employee' && (

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { CATEGORIES, CAT_ICONS } from '../constants';
-import ManagerSchedule from '../components/ManagerSchedule';
 
 function formatClockTime(iso) {
   const d = new Date(iso);
@@ -18,7 +17,7 @@ function clockDuration(clockInIso) {
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
-export default function Manager({ employees, bottles, sales, goals, schedule, timeclock, onSell, onUndoSell, onSetGoal, onClockIn, onClockOut }) {
+export default function Manager({ employees, bottles, sales, goals, timeclock, onSell, onUndoSell, onSetGoal, onClockIn, onClockOut }) {
   const [emp, setEmp] = useState(employees[0] || '');
   const [catFilter, setCatFilter] = useState('All');
   const [bottleId, setBottleId] = useState('');
@@ -210,9 +209,6 @@ export default function Manager({ employees, bottles, sales, goals, schedule, ti
         </div>
       </div>
 
-      <div className="ornament-sm" style={{ margin: '20px 0' }}>── ✦ ──</div>
-
-      <ManagerSchedule employees={employees} schedule={schedule} timeclock={timeclock} />
     </div>
   );
 }

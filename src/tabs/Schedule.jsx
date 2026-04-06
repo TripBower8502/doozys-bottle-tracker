@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { DAYS, getWeekKey, getWeekDates, formatWeekRange, shiftWeek, isToday, formatTime } from '../weekUtils';
+import ManagerSchedule from '../components/ManagerSchedule';
 
 function formatClockTime(iso) {
   const d = new Date(iso);
@@ -14,15 +15,25 @@ export default function Schedule({ employees, schedule, timeclock, lockedEmploye
   const [selectedEmp, setSelectedEmp] = useState(employees[0] || '');
   const [weekDate, setWeekDate] = useState(new Date());
 
-  const emp = lockedEmployee || selectedEmp;
+  // Manager view — show full schedule management
+  if (!lockedEmployee) {
+    return (
+      <div className="tab-content schedule-tab">
+        <h2 className="tab-title">Schedule</h2>
+        <div className="ornament-sm">── ✦ ──</div>
+        <ManagerSchedule employees={employees} schedule={schedule} timeclock={timeclock} />
+      </div>
+    );
+  }
+
+  // Employee view — personal schedule + clock in/out
+  const emp = lockedEmployee;
   const weekKey = getWeekKey(weekDate);
   const weekDates = getWeekDates(weekDate);
   const weekSchedule = (schedule && schedule[weekKey]) || {};
   const empSched = weekSchedule[emp] || {};
-
   const hasSchedule = Object.values(empSched).some((v) => v !== null);
 
-  // Today's clock status — supports multiple punches per day
   const today = new Date().toISOString().slice(0, 10);
   const rawPunches = timeclock?.[emp]?.[today] || null;
   const punches = rawPunches ? (Array.isArray(rawPunches) ? rawPunches : [rawPunches]) : [];
@@ -30,7 +41,6 @@ export default function Schedule({ employees, schedule, timeclock, lockedEmploye
   const isClockedIn = lastPunch && lastPunch.clockIn && !lastPunch.clockOut;
   const allClockedOut = punches.length > 0 && punches.every((p) => p.clockOut);
 
-  // Find next upcoming shift
   const now = new Date();
   let nextShift = null;
   for (const { day, date } of getWeekDates(new Date())) {
@@ -47,45 +57,28 @@ export default function Schedule({ employees, schedule, timeclock, lockedEmploye
       <h2 className="tab-title">Schedule</h2>
       <div className="ornament-sm">── ✦ ──</div>
 
-      {!lockedEmployee && (
-        <div className="pill-row">
-          {employees.map((e) => (
-            <button
-              key={e}
-              className={`pill${emp === e ? ' active' : ''}`}
-              onClick={() => setSelectedEmp(e)}
-            >
-              {e}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Clock In/Out */}
-      {lockedEmployee && (
-        <div className={`clock-card${isClockedIn ? ' clocked-in' : ''}`}>
-          {isClockedIn ? (
-            <>
-              <div className="clock-status">
-                <span className="clock-dot green" />
-                <span className="clock-label">Clocked in since {formatClockTime(lastPunch.clockIn)}</span>
+      <div className={`clock-card${isClockedIn ? ' clocked-in' : ''}`}>
+        {isClockedIn ? (
+          <>
+            <div className="clock-status">
+              <span className="clock-dot green" />
+              <span className="clock-label">Clocked in since {formatClockTime(lastPunch.clockIn)}</span>
+            </div>
+            <button className="btn-clock-out" onClick={() => onClockOut(emp)}>Clock Out</button>
+          </>
+        ) : (
+          <>
+            {allClockedOut && (
+              <div className="clock-history">
+                {punches.map((p, i) => (
+                  <p key={i} className="clock-done">{formatClockTime(p.clockIn)} – {formatClockTime(p.clockOut)}</p>
+                ))}
               </div>
-              <button className="btn-clock-out" onClick={() => onClockOut(emp)}>Clock Out</button>
-            </>
-          ) : (
-            <>
-              {allClockedOut && (
-                <div className="clock-history">
-                  {punches.map((p, i) => (
-                    <p key={i} className="clock-done">{formatClockTime(p.clockIn)} – {formatClockTime(p.clockOut)}</p>
-                  ))}
-                </div>
-              )}
-              <button className="btn-gold btn-clock-in" onClick={() => onClockIn(emp)}>Clock In</button>
-            </>
-          )}
-        </div>
-      )}
+            )}
+            <button className="btn-gold btn-clock-in" onClick={() => onClockIn(emp)}>Clock In</button>
+          </>
+        )}
+      </div>
 
       {nextShift && (
         <div className="next-shift">

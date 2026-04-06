@@ -200,7 +200,6 @@ function App() {
             bottles={bottles}
             sales={sales}
             goals={goals}
-            schedule={schedule}
             timeclock={timeclock}
             onSell={handleSell}
             onUndoSell={handleUndoSell}

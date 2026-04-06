@@ -1031,72 +1031,91 @@ html, body {
   font-style: italic;
 }
 
-/* ── DAY VIEW (Manager) ── */
-.day-view-list {
+/* ── TIMELINE (Manager Day View) ── */
+.timeline-axis {
+  position: relative;
+  height: 20px;
+  margin: 0 0 4px 70px;
+  border-bottom: 1px solid var(--border);
+}
+.timeline-hour {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 9px;
+  color: var(--muted);
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+  top: 2px;
+}
+.timeline-rows {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
+  margin-bottom: 12px;
 }
-.day-view-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
-}
-.day-view-header {
+.timeline-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px;
-  cursor: pointer;
-}
-.day-view-header:active { background: var(--surface2); }
-.day-view-name {
-  font-family: var(--font-display);
-  font-size: 14px;
-  color: var(--cream);
-  letter-spacing: 1px;
-}
-.day-view-scheduled {
-  font-size: 13px;
-  color: var(--gold);
-}
-.day-view-off {
-  font-size: 13px;
-  color: var(--muted);
-  font-style: italic;
-}
-.day-view-punches {
-  padding: 0 12px 10px;
-  display: flex;
-  gap: 8px;
   flex-wrap: wrap;
 }
-.punch-wrap {
-  display: flex;
-  flex-direction: column;
-}
-.day-view-punch {
+.timeline-name {
+  width: 70px;
+  flex-shrink: 0;
   font-size: 11px;
-  color: var(--green);
-  background: #f4faf3;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-weight: 600;
-  border: 1px solid transparent;
-  cursor: pointer;
-  font-family: var(--font-body);
+  color: var(--cream);
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+  padding: 4px 4px 4px 0;
+  display: flex;
+  align-items: center;
 }
-.day-view-punch:hover { border-color: var(--green); }
+.timeline-track {
+  flex: 1;
+  position: relative;
+  height: 32px;
+  background: var(--surface2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.timeline-bar {
+  position: absolute;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.timeline-bar:hover { opacity: 0.85; }
+.timeline-bar.scheduled {
+  top: 2px;
+  height: 14px;
+  opacity: 0.7;
+}
+.timeline-bar.actual {
+  bottom: 2px;
+  height: 12px;
+  opacity: 0.95;
+  filter: brightness(0.75);
+}
+.timeline-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 11px;
+  font-style: italic;
+}
+.timeline-empty:hover { background: var(--border); border-radius: 4px; }
 .punch-editor {
   background: var(--surface);
   border: 1px solid var(--gold);
   border-radius: 6px;
   padding: 10px;
-  margin-top: 6px;
+  margin: 4px 0 4px 70px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: calc(100% - 70px);
 }
 .punch-editor .shift-actions { gap: 4px; }
 .punch-editor .btn-gold, .punch-editor .btn-ghost { padding: 6px 10px; font-size: 10px; }
