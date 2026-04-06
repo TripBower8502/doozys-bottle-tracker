@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
-import { STORAGE_KEYS, DEFAULT_BOTTLES, DEFAULT_EMPLOYEES, CATEGORIES } from './constants';
-import { load, save } from './storage';
+import { useState, useEffect, useCallback } from 'react';
+import { DEFAULT_BOTTLES, DEFAULT_EMPLOYEES } from './constants';
+import { db, ref, onValue, set, update } from './firebase';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import FlashBanner from './components/FlashBanner';
@@ -17,35 +17,72 @@ function getRole(employeeList) {
 }
 
 function App() {
-  const [bottles, setBottles] = useState(() => load(STORAGE_KEYS.BOTTLES, DEFAULT_BOTTLES));
-  const [employees, setEmployees] = useState(() => load(STORAGE_KEYS.EMPLOYEES, DEFAULT_EMPLOYEES));
+  const [bottles, setBottles] = useState(DEFAULT_BOTTLES);
+  const [employees, setEmployees] = useState(DEFAULT_EMPLOYEES);
   const { isManager, lockedEmployee } = getRole(employees);
   const [tab, setTab] = useState('rankings');
-  const [sales, setSales] = useState(() => load(STORAGE_KEYS.SALES, {}));
-  const [goals, setGoals] = useState(() => load(STORAGE_KEYS.GOALS, {}));
-  const [history, setHistory] = useState(() => load(STORAGE_KEYS.HISTORY, []));
+  const [sales, setSales] = useState({});
+  const [goals, setGoals] = useState({});
+  const [history, setHistory] = useState([]);
   const [flash, setFlash] = useState(null);
+  const [loaded, setLoaded] = useState(false);
 
-  const persist = (key, val, setter) => {
-    setter(val);
-    save(key, val);
-  };
+  // Subscribe to Firebase on mount
+  useEffect(() => {
+    const unsubs = [];
+
+    unsubs.push(onValue(ref(db, 'bottles'), (snap) => {
+      const val = snap.val();
+      if (val) setBottles(val);
+    }));
+
+    unsubs.push(onValue(ref(db, 'employees'), (snap) => {
+      const val = snap.val();
+      if (val) setEmployees(val);
+    }));
+
+    unsubs.push(onValue(ref(db, 'sales'), (snap) => {
+      setSales(snap.val() || {});
+    }));
+
+    unsubs.push(onValue(ref(db, 'goals'), (snap) => {
+      setGoals(snap.val() || {});
+    }));
+
+    unsubs.push(onValue(ref(db, 'history'), (snap) => {
+      setHistory(snap.val() || []);
+    }));
+
+    // Mark loaded after first data arrives
+    onValue(ref(db, 'bottles'), () => setLoaded(true), { onlyOnce: true });
+
+    return () => unsubs.forEach((fn) => fn());
+  }, []);
+
+  // Seed defaults if database is empty (first run)
+  useEffect(() => {
+    if (!loaded) return;
+    const seedRef = ref(db, 'bottles');
+    onValue(seedRef, (snap) => {
+      if (!snap.exists()) {
+        set(ref(db, 'bottles'), DEFAULT_BOTTLES);
+        set(ref(db, 'employees'), DEFAULT_EMPLOYEES);
+        set(ref(db, 'sales'), {});
+        set(ref(db, 'goals'), {});
+        set(ref(db, 'history'), []);
+      }
+    }, { onlyOnce: true });
+  }, [loaded]);
 
   const handleSell = useCallback((empName, bottleId) => {
-    setSales((prev) => {
-      const next = { ...prev };
-      if (!next[empName]) next[empName] = {};
-      next[empName] = { ...next[empName], [bottleId]: (next[empName][bottleId] || 0) + 1 };
-      save(STORAGE_KEYS.SALES, next);
-      return next;
-    });
+    const currentCount = (sales[empName] && sales[empName][bottleId]) || 0;
+    update(ref(db, `sales/${empName}`), { [bottleId]: currentCount + 1 });
     const bottle = bottles.find((b) => b.id === bottleId);
     setFlash(`${empName} sold ${bottle?.name || 'a bottle'}!`);
-  }, [bottles]);
+  }, [bottles, sales]);
 
   const handleSetGoal = (empName, target) => {
-    const next = { ...goals, [empName]: target };
-    persist(STORAGE_KEYS.GOALS, next, setGoals);
+    update(ref(db, 'goals'), { [empName]: target });
   };
 
   const handleResetWeek = () => {
@@ -65,10 +102,20 @@ function App() {
 
     const snap = { week: new Date().toISOString().slice(0, 10), totals };
     const nextHistory = [...history, snap];
-    persist(STORAGE_KEYS.HISTORY, nextHistory, setHistory);
-    persist(STORAGE_KEYS.SALES, {}, setSales);
+    set(ref(db, 'history'), nextHistory);
+    set(ref(db, 'sales'), {});
   };
 
+  if (!loaded) {
+    return (
+      <div className="app">
+        <Header />
+        <main className="main" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <p style={{ color: 'var(--muted)', fontFamily: 'var(--font-display)', letterSpacing: 2 }}>Loading…</p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="app">
