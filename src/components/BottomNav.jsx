@@ -3,7 +3,6 @@ const TABS = [
   { id: 'mysales', label: 'My Sales', icon: '📊' },
   { id: 'manager', label: 'Manager', icon: '📋' },
   { id: 'guide', label: 'Guide', icon: '📖' },
-  { id: 'setup', label: 'Setup', icon: '⚙️' },
 ];
 
 export default function BottomNav({ active, onNav }) {

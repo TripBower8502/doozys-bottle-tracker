@@ -8,7 +8,6 @@ import Rankings from './tabs/Rankings';
 import MySales from './tabs/MySales';
 import Manager from './tabs/Manager';
 import Guide from './tabs/Guide';
-import Setup from './tabs/Setup';
 
 function App() {
   const [tab, setTab] = useState('rankings');
@@ -62,26 +61,6 @@ function App() {
     persist(STORAGE_KEYS.SALES, {}, setSales);
   };
 
-  const handleAddBottle = (bottle) => {
-    const next = [...bottles, bottle];
-    persist(STORAGE_KEYS.BOTTLES, next, setBottles);
-  };
-
-  const handleRemoveBottle = (id) => {
-    const next = bottles.filter((b) => b.id !== id);
-    persist(STORAGE_KEYS.BOTTLES, next, setBottles);
-  };
-
-  const handleAddEmployee = (name) => {
-    if (employees.includes(name)) return;
-    const next = [...employees, name];
-    persist(STORAGE_KEYS.EMPLOYEES, next, setEmployees);
-  };
-
-  const handleRemoveEmployee = (name) => {
-    const next = employees.filter((e) => e !== name);
-    persist(STORAGE_KEYS.EMPLOYEES, next, setEmployees);
-  };
 
   return (
     <div className="app">
@@ -125,16 +104,6 @@ function App() {
           />
         )}
         {tab === 'guide' && <Guide bottles={bottles} />}
-        {tab === 'setup' && (
-          <Setup
-            bottles={bottles}
-            employees={employees}
-            onAddBottle={handleAddBottle}
-            onRemoveBottle={handleRemoveBottle}
-            onAddEmployee={handleAddEmployee}
-            onRemoveEmployee={handleRemoveEmployee}
-          />
-        )}
       </main>
 
       <BottomNav active={tab} onNav={setTab} />
