@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { CATEGORIES, CAT_ICONS, CAT_COLORS } from '../constants';
 import CategorySection from '../components/CategorySection';
 
-export default function MySales({ employees, bottles, sales, goals, onSell }) {
-  const [emp, setEmp] = useState(employees[0] || '');
+export default function MySales({ employees, bottles, sales, goals, onSell, lockedEmployee }) {
+  const [selectedEmp, setSelectedEmp] = useState(employees[0] || '');
   const [catFilter, setCatFilter] = useState('All');
 
+  const emp = lockedEmployee || selectedEmp;
   const empSales = sales[emp] || {};
   let totalPts = 0;
   let totalBonus = 0;
@@ -31,17 +32,19 @@ export default function MySales({ employees, bottles, sales, goals, onSell }) {
       <h2 className="tab-title">My Sales</h2>
       <div className="ornament-sm">── ✦ ──</div>
 
-      <div className="pill-row">
-        {employees.map((e) => (
-          <button
-            key={e}
-            className={`pill${emp === e ? ' active' : ''}`}
-            onClick={() => setEmp(e)}
-          >
-            {e}
-          </button>
-        ))}
-      </div>
+      {!lockedEmployee && (
+        <div className="pill-row">
+          {employees.map((e) => (
+            <button
+              key={e}
+              className={`pill${emp === e ? ' active' : ''}`}
+              onClick={() => setSelectedEmp(e)}
+            >
+              {e}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="stats-row">
         <div className="stat-card">

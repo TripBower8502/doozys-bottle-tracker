@@ -9,10 +9,18 @@ import MySales from './tabs/MySales';
 import Manager from './tabs/Manager';
 import Guide from './tabs/Guide';
 
+function getRole(employeeList) {
+  const hash = window.location.hash.replace('#', '').replace(/^\//, '');
+  if (hash === 'manager') return { isManager: true, lockedEmployee: null };
+  const match = employeeList.find((e) => e.toLowerCase() === hash.toLowerCase());
+  return { isManager: false, lockedEmployee: match || employeeList[0] || null };
+}
+
 function App() {
-  const [tab, setTab] = useState('rankings');
   const [bottles, setBottles] = useState(() => load(STORAGE_KEYS.BOTTLES, DEFAULT_BOTTLES));
   const [employees, setEmployees] = useState(() => load(STORAGE_KEYS.EMPLOYEES, DEFAULT_EMPLOYEES));
+  const { isManager, lockedEmployee } = getRole(employees);
+  const [tab, setTab] = useState('rankings');
   const [sales, setSales] = useState(() => load(STORAGE_KEYS.SALES, {}));
   const [goals, setGoals] = useState(() => load(STORAGE_KEYS.GOALS, {}));
   const [history, setHistory] = useState(() => load(STORAGE_KEYS.HISTORY, []));
@@ -77,11 +85,13 @@ function App() {
               goals={goals}
               history={history}
             />
-            <div style={{ padding: '0 16px 24px', textAlign: 'center' }}>
-              <button className="btn-ghost danger" onClick={handleResetWeek}>
-                Reset for New Week
-              </button>
-            </div>
+            {isManager && (
+              <div style={{ padding: '0 16px 24px', textAlign: 'center' }}>
+                <button className="btn-ghost danger" onClick={handleResetWeek}>
+                  Reset for New Week
+                </button>
+              </div>
+            )}
           </div>
         )}
         {tab === 'mysales' && (
@@ -91,9 +101,10 @@ function App() {
             sales={sales}
             goals={goals}
             onSell={handleSell}
+            lockedEmployee={lockedEmployee}
           />
         )}
-        {tab === 'manager' && (
+        {tab === 'manager' && isManager && (
           <Manager
             employees={employees}
             bottles={bottles}
@@ -106,7 +117,7 @@ function App() {
         {tab === 'guide' && <Guide bottles={bottles} />}
       </main>
 
-      <BottomNav active={tab} onNav={setTab} />
+      <BottomNav active={tab} onNav={setTab} isManager={isManager} />
     </div>
   );
 }

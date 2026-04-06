@@ -1,14 +1,15 @@
-const TABS = [
+const ALL_TABS = [
   { id: 'rankings', label: 'Rankings', icon: '🏆' },
   { id: 'mysales', label: 'My Sales', icon: '📊' },
-  { id: 'manager', label: 'Manager', icon: '📋' },
+  { id: 'manager', label: 'Manager', icon: '📋', managerOnly: true },
   { id: 'guide', label: 'Guide', icon: '📖' },
 ];
 
-export default function BottomNav({ active, onNav }) {
+export default function BottomNav({ active, onNav, isManager }) {
+  const tabs = isManager ? ALL_TABS : ALL_TABS.filter((t) => !t.managerOnly);
   return (
     <nav className="bottom-nav">
-      {TABS.map((t) => (
+      {tabs.map((t) => (
         <button
           key={t.id}
           className={`nav-btn${active === t.id ? ' active' : ''}`}
