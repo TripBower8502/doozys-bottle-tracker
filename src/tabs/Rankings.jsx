@@ -26,11 +26,20 @@ export default function Rankings({ employees, bottles, sales, goals, history }) 
     .sort((a, b) => b.totalPts - a.totalPts);
 
   const lastWeek = history.length > 0 ? history[history.length - 1] : null;
+  const allZero = ranked.every((r) => r.totalPts === 0);
 
   return (
     <div className="tab-content rankings">
       <h2 className="tab-title">Rankings</h2>
       <div className="ornament-sm">── ✦ ──</div>
+
+      {allZero && (
+        <div className="new-week-banner">
+          <span className="new-week-icon">🍾</span>
+          <span className="new-week-text">New week — let's go!</span>
+          <span className="new-week-sub">First sale takes the lead</span>
+        </div>
+      )}
 
       <div className="rank-list">
         {ranked.map((r, i) => (

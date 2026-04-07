@@ -918,6 +918,80 @@ html, body {
   text-align: right;
 }
 
+/* ── NEW WEEK BANNER ── */
+.new-week-banner {
+  background: linear-gradient(135deg, #fffdf5 0%, #fef9e7 100%);
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: var(--gold-glow);
+}
+.new-week-icon { font-size: 28px; }
+.new-week-text {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--gold);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.new-week-sub {
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ── INSTALL BANNER ── */
+.install-banner {
+  position: relative;
+  background: var(--surface);
+  border-bottom: 1px solid var(--gold);
+  padding: 12px 16px;
+  flex-shrink: 0;
+}
+.install-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.install-icon { font-size: 24px; flex-shrink: 0; }
+.install-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  color: var(--text);
+}
+.install-text strong {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--cream);
+  margin-bottom: 2px;
+}
+.install-share {
+  display: inline-block;
+  padding: 0 4px;
+  color: var(--blue);
+  font-size: 14px;
+}
+.install-btn { padding: 6px 12px; font-size: 11px; }
+.install-close {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
 /* ── OFFLINE BAR ── */
 .offline-bar {
   position: absolute;
@@ -1087,6 +1161,38 @@ html, body {
   top: 2px;
   height: 14px;
   opacity: 0.7;
+  touch-action: none;
+}
+.timeline-bar.scheduled.dragging {
+  opacity: 1;
+  z-index: 5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.timeline-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+  background: rgba(255,255,255,0.4);
+  touch-action: none;
+}
+.timeline-handle.left { left: 0; border-radius: 3px 0 0 3px; }
+.timeline-handle.right { right: 0; border-radius: 0 3px 3px 0; }
+.timeline-drag-label {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-family: var(--font-display);
+  color: var(--gold);
+  background: var(--surface);
+  padding: 1px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  pointer-events: none;
+  border: 1px solid var(--gold);
 }
 .timeline-bar.actual {
   bottom: 2px;

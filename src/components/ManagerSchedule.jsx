@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { db, ref, set } from '../firebase';
 import { DAYS, getWeekKey, getWeekDates, formatWeekRange, shiftWeek, isToday, formatTime, QUICK_SHIFTS } from '../weekUtils';
 
@@ -50,6 +50,19 @@ function minutesToPct(mins) {
   return Math.max(0, Math.min(100, ((m - TIMELINE_START) / TIMELINE_SPAN) * 100));
 }
 
+function pxToMinutes(px, trackWidth) {
+  const mins = TIMELINE_START + (px / trackWidth) * TIMELINE_SPAN;
+  // Snap to 15 min
+  return Math.round(mins / 15) * 15;
+}
+
+function minutesToTimeStr(mins) {
+  const m = ((mins % (24 * 60)) + 24 * 60) % (24 * 60);
+  const h = Math.floor(m / 60);
+  const min = m % 60;
+  return `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+}
+
 const TIMELINE_HOURS = [6, 8, 10, 12, 14, 16, 18, 20, 22, 0];
 
 export default function ManagerSchedule({ employees, schedule, timeclock }) {
@@ -67,6 +80,7 @@ export default function ManagerSchedule({ employees, schedule, timeclock }) {
   const [editingPunch, setEditingPunch] = useState(null); // { emp, dateStr, idx }
   const [punchIn, setPunchIn] = useState('');
   const [punchOut, setPunchOut] = useState('');
+  const [dragState, setDragState] = useState(null); // { emp, day, mode, originalShift, trackWidth, startX, startMins, endMins }
 
   const weekKey = getWeekKey(weekDate);
   const weekDates = getWeekDates(weekDate);
@@ -157,6 +171,70 @@ export default function ManagerSchedule({ employees, schedule, timeclock }) {
     setEditingPunch(null);
   };
 
+  // ── Drag-to-edit timeline shifts ──
+  const startDrag = (e, mode, emp, day, shift, trackEl) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const rect = trackEl.getBoundingClientRect();
+    setDragState({
+      emp, day, mode,
+      trackWidth: rect.width,
+      trackLeft: rect.left,
+      startX: e.clientX,
+      startMins: timeToMinutes(shift.start),
+      endMins: timeToMinutes(shift.end),
+      currentStart: timeToMinutes(shift.start),
+      currentEnd: timeToMinutes(shift.end),
+      moved: false,
+    });
+  };
+
+  useEffect(() => {
+    if (!dragState) return;
+    const handleMove = (e) => {
+      const clientX = e.clientX || (e.touches && e.touches[0]?.clientX);
+      if (clientX === undefined) return;
+      const dx = clientX - dragState.startX;
+      const deltaMins = Math.round((dx / dragState.trackWidth) * TIMELINE_SPAN / 15) * 15;
+      let nextStart = dragState.startMins;
+      let nextEnd = dragState.endMins;
+      if (dragState.mode === 'move') {
+        nextStart += deltaMins;
+        nextEnd += deltaMins;
+      } else if (dragState.mode === 'left') {
+        nextStart += deltaMins;
+        if (nextStart >= nextEnd - 15) nextStart = nextEnd - 15;
+      } else if (dragState.mode === 'right') {
+        nextEnd += deltaMins;
+        if (nextEnd <= nextStart + 15) nextEnd = nextStart + 15;
+      }
+      if (Math.abs(deltaMins) >= 15) {
+        setDragState((prev) => ({ ...prev, currentStart: nextStart, currentEnd: nextEnd, moved: true }));
+      }
+    };
+    const handleUp = () => {
+      if (dragState.moved) {
+        const existingShift = weekSchedule[dragState.emp]?.[dragState.day] || {};
+        setShift(dragState.emp, dragState.day, {
+          start: minutesToTimeStr(dragState.currentStart),
+          end: minutesToTimeStr(dragState.currentEnd),
+          note: existingShift.note || '',
+        });
+      }
+      setDragState(null);
+    };
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+    window.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('touchend', handleUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+      window.removeEventListener('touchmove', handleMove);
+      window.removeEventListener('touchend', handleUp);
+    };
+  }, [dragState, weekSchedule]);
+
   // Get punches for an employee on a specific date
   const getPunches = (emp, dateStr) => {
     const raw = timeclock?.[emp]?.[dateStr] || null;
@@ -220,18 +298,51 @@ export default function ManagerSchedule({ employees, schedule, timeclock }) {
                     <div className="timeline-name">{emp}</div>
                     <div className="timeline-track">
                       {/* Scheduled shift bar */}
-                      {shift && (
-                        <div
-                          className="timeline-bar scheduled"
-                          style={{
-                            left: `${minutesToPct(timeToMinutes(shift.start))}%`,
-                            width: `${minutesToPct(timeToMinutes(shift.end)) - minutesToPct(timeToMinutes(shift.start))}%`,
-                            background: color,
-                          }}
-                          onClick={() => openEditor(emp, selectedDay, shift)}
-                          title={`${formatTime(shift.start)}–${formatTime(shift.end)}${shift.note ? ' · ' + shift.note : ''}`}
-                        />
-                      )}
+                      {shift && (() => {
+                        const isDraggingThis = dragState && dragState.emp === emp && dragState.day === selectedDay;
+                        const startMins = isDraggingThis ? dragState.currentStart : timeToMinutes(shift.start);
+                        const endMins = isDraggingThis ? dragState.currentEnd : timeToMinutes(shift.end);
+                        return (
+                          <div
+                            className={`timeline-bar scheduled${isDraggingThis ? ' dragging' : ''}`}
+                            style={{
+                              left: `${minutesToPct(startMins)}%`,
+                              width: `${minutesToPct(endMins) - minutesToPct(startMins)}%`,
+                              background: color,
+                            }}
+                            onMouseDown={(e) => startDrag(e, 'move', emp, selectedDay, shift, e.currentTarget.parentElement)}
+                            onTouchStart={(e) => {
+                              const t = e.touches[0];
+                              startDrag({ clientX: t.clientX, stopPropagation: () => e.stopPropagation(), preventDefault: () => e.preventDefault() }, 'move', emp, selectedDay, shift, e.currentTarget.parentElement);
+                            }}
+                            onClick={(e) => {
+                              if (dragState?.moved) return;
+                              openEditor(emp, selectedDay, shift);
+                            }}
+                            title={`${formatTime(shift.start)}–${formatTime(shift.end)}${shift.note ? ' · ' + shift.note : ''}`}
+                          >
+                            <span
+                              className="timeline-handle left"
+                              onMouseDown={(e) => startDrag(e, 'left', emp, selectedDay, shift, e.currentTarget.parentElement.parentElement)}
+                              onTouchStart={(e) => {
+                                const t = e.touches[0];
+                                startDrag({ clientX: t.clientX, stopPropagation: () => e.stopPropagation(), preventDefault: () => e.preventDefault() }, 'left', emp, selectedDay, shift, e.currentTarget.parentElement.parentElement);
+                              }}
+                            />
+                            <span
+                              className="timeline-handle right"
+                              onMouseDown={(e) => startDrag(e, 'right', emp, selectedDay, shift, e.currentTarget.parentElement.parentElement)}
+                              onTouchStart={(e) => {
+                                const t = e.touches[0];
+                                startDrag({ clientX: t.clientX, stopPropagation: () => e.stopPropagation(), preventDefault: () => e.preventDefault() }, 'right', emp, selectedDay, shift, e.currentTarget.parentElement.parentElement);
+                              }}
+                            />
+                            {isDraggingThis && (
+                              <span className="timeline-drag-label">{formatTime(minutesToTimeStr(startMins))}–{formatTime(minutesToTimeStr(endMins))}</span>
+                            )}
+                          </div>
+                        );
+                      })()}
                       {/* Actual punch bars */}
                       {punches.map((p, i) => {
                         const startM = isoToMinutes(p.clockIn);

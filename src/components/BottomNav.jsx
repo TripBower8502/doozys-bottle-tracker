@@ -1,3 +1,5 @@
+import { tap } from '../haptics';
+
 const MANAGER_TABS = [
   { id: 'manager', label: 'Dashboard', icon: '📋' },
   { id: 'rankings', label: 'Rankings', icon: '🏆' },
@@ -20,7 +22,7 @@ export default function BottomNav({ active, onNav, isManager }) {
         <button
           key={t.id}
           className={`nav-btn${active === t.id ? ' active' : ''}`}
-          onClick={() => onNav(t.id)}
+          onClick={() => { tap(); onNav(t.id); }}
         >
           <span className="nav-icon">{t.icon}</span>
           <span className="nav-label">{t.label}</span>

@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { DEFAULT_BOTTLES, DEFAULT_EMPLOYEES } from './constants';
 import { db, ref, onValue, set, update } from './firebase';
+import { tap, success } from './haptics';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import FlashBanner from './components/FlashBanner';
 import OfflineBar from './components/OfflineBar';
+import InstallBanner from './components/InstallBanner';
 import Rankings from './tabs/Rankings';
 import MySales from './tabs/MySales';
 import Manager from './tabs/Manager';
@@ -87,6 +89,7 @@ function App() {
   }, [loaded]);
 
   const handleSell = useCallback((empName, bottleId) => {
+    success();
     const currentCount = (sales[empName] && sales[empName][bottleId]) || 0;
     update(ref(db, `sales/${empName}`), { [bottleId]: currentCount + 1 });
     const bottle = bottles.find((b) => b.id === bottleId);
@@ -102,6 +105,7 @@ function App() {
   }, [bottles, sales]);
 
   const handleClockIn = useCallback((empName) => {
+    success();
     const today = new Date().toISOString().slice(0, 10);
     const punches = timeclock?.[empName]?.[today] || [];
     const arr = Array.isArray(punches) ? punches : [punches];
@@ -111,6 +115,7 @@ function App() {
   }, [timeclock]);
 
   const handleClockOut = useCallback((empName) => {
+    success();
     const today = new Date().toISOString().slice(0, 10);
     const punches = timeclock?.[empName]?.[today] || [];
     const arr = Array.isArray(punches) ? punches : [punches];
@@ -162,6 +167,7 @@ function App() {
   return (
     <div className="app">
       <OfflineBar />
+      <InstallBanner />
       <FlashBanner message={flash} onDone={() => setFlash(null)} />
       <Header />
 
